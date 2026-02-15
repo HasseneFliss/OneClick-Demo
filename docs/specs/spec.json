@@ -1,63 +1,90 @@
 {
-  "files": [
-    {
-      "path": "docs/api-specs.md",
-      "content": "# API Specifications\n\n## POST /api/auth/register\nRegister a new user.\n\n## POST /api/auth/login\nAuthenticate user and return JWT.\n\n## GET /api/dashboard\nGet dashboard data (authenticated)."
-    }
-  ],
-  "specifications": [
-    {
-      "id": "SPEC-001",
-      "title": "User Registration API",
-      "endpoints": [
-        {
-          "body": {
-            "email": "string",
-            "password": "string"
-          },
-          "path": "/api/auth/register",
-          "method": "POST"
+  "openApiSpec": {
+    "paths": {
+      "/api/v1/notifications": {
+        "get": {
+          "summary": "List user notifications"
+        },
+        "post": {
+          "summary": "Create notification"
         }
-      ],
-      "validation": [
-        "Email must be valid format",
-        "Password min 8 chars"
-      ],
-      "description": "REST API endpoint for user registration",
-      "userStoryId": "US-001"
-    },
-    {
-      "id": "SPEC-002",
-      "title": "User Login API",
-      "response": {
-        "user": "User object",
-        "token": "JWT token"
       },
-      "endpoints": [
-        {
-          "body": {
-            "email": "string",
-            "password": "string"
-          },
-          "path": "/api/auth/login",
-          "method": "POST"
+      "/api/v1/ws/notifications": {
+        "description": "WebSocket endpoint for real-time notifications"
+      },
+      "/api/v1/notifications/read-all": {
+        "put": {
+          "summary": "Mark all as read"
         }
-      ],
-      "description": "REST API endpoint for user authentication",
-      "userStoryId": "US-002"
+      },
+      "/api/v1/notifications/{id}/read": {
+        "put": {
+          "summary": "Mark notification as read"
+        }
+      },
+      "/api/v1/notifications/preferences": {
+        "get": {
+          "summary": "Get preferences"
+        },
+        "put": {
+          "summary": "Update preferences"
+        }
+      },
+      "/api/v1/admin/notifications/broadcast": {
+        "post": {
+          "summary": "Send broadcast notification"
+        }
+      }
+    }
+  },
+  "databaseSchema": {
+    "tables": [
+      {
+        "name": "notifications",
+        "columns": [
+          "id UUID PK",
+          "user_id UUID FK",
+          "type VARCHAR(50)",
+          "title VARCHAR(255)",
+          "body TEXT",
+          "data JSONB",
+          "read BOOLEAN",
+          "created_at TIMESTAMP"
+        ]
+      },
+      {
+        "name": "notification_preferences",
+        "columns": [
+          "user_id UUID PK FK",
+          "preferences JSONB",
+          "quiet_hours_start TIME",
+          "quiet_hours_end TIME"
+        ]
+      },
+      {
+        "name": "notification_templates",
+        "columns": [
+          "id UUID PK",
+          "name VARCHAR(100)",
+          "subject VARCHAR(255)",
+          "html_body TEXT",
+          "text_body TEXT"
+        ]
+      }
+    ]
+  },
+  "architectureDecisions": [
+    {
+      "title": "WebSocket for Real-time",
+      "decision": "Use Socket.io for WebSocket connections with Redis adapter for scaling"
     },
     {
-      "id": "SPEC-003",
-      "title": "Dashboard API",
-      "endpoints": [
-        {
-          "auth": "Bearer token required",
-          "path": "/api/dashboard",
-          "method": "GET"
-        }
-      ],
-      "description": "REST API endpoint for dashboard data",
-      "userStoryId": "US-003"
+      "title": "Email Service",
+      "decision": "Use SendGrid for email delivery with template support"
+    },
+    {
+      "title": "Queue System",
+      "decision": "Use RabbitMQ for notification job processing"
     }
   ]
 }
