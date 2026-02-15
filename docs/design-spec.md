@@ -1,42 +1,77 @@
 # Design Specification
 
 {
-  "files": [
-    {
-      "path": "docs/design-specs.md",
-      "content": "# Design Specifications\n\n## Pages\n1. Registration Page\n2. Login Page\n3. Dashboard"
+  "designTokens": {
+    "colors": {
+      "error": "#ef4444",
+      "primary": "#6366f1",
+      "success": "#22c55e",
+      "warning": "#f59e0b"
+    },
+    "spacing": {
+      "lg": "24px",
+      "md": "16px",
+      "sm": "8px",
+      "xl": "32px",
+      "xs": "4px"
+    },
+    "borderRadius": {
+      "lg": "12px",
+      "md": "8px",
+      "sm": "4px",
+      "full": "9999px"
     }
-  ],
-  "designs": [
-    {
-      "id": "D-001",
-      "name": "Registration Page",
-      "type": "page",
+  },
+  "figmaDesigns": {
+    "loginPage": {
+      "layout": "Centered card with logo, form inputs, and social login options below",
       "components": [
         "EmailInput",
         "PasswordInput",
+        "RememberMeCheckbox",
+        "LoginButton",
+        "SocialLoginButtons",
+        "ForgotPasswordLink"
+      ]
+    },
+    "adminRoles": {
+      "layout": "Data table with expandable permission details",
+      "components": [
+        "RoleTable",
+        "PermissionMatrix",
+        "CreateRoleModal",
+        "AssignRoleModal"
+      ]
+    },
+    "mfaSetupPage": {
+      "layout": "Step-by-step MFA setup with authenticator app instructions",
+      "components": [
+        "QRCodeDisplay",
+        "SecretKeyText",
+        "VerificationInput",
+        "BackupCodesDisplay",
+        "ConfirmButton"
+      ]
+    },
+    "registerPage": {
+      "layout": "Multi-step wizard: 1. Email, 2. Password, 3. Verification",
+      "components": [
+        "EmailInput",
+        "PasswordInput",
+        "ConfirmPasswordInput",
+        "PasswordStrengthMeter",
+        "TermsCheckbox",
         "RegisterButton"
       ]
     },
-    {
-      "id": "D-002",
-      "name": "Login Page",
-      "type": "page",
+    "sessionManagement": {
+      "layout": "List view with device icons, location info, and action buttons",
       "components": [
-        "EmailInput",
-        "PasswordInput",
-        "LoginButton"
-      ]
-    },
-    {
-      "id": "D-003",
-      "name": "Dashboard",
-      "type": "page",
-      "components": [
-        "Header",
-        "MetricsCard",
-        "ActivityList"
+        "SessionList",
+        "SessionCard",
+        "RevokeButton",
+        "LogoutAllButton"
       ]
     }
-  ]
+  }
 }
