@@ -1,364 +1,90 @@
 {
   "openApiSpec": {
-    "info": {
-      "title": "Auth API",
-      "version": "1.0.0"
-    },
     "paths": {
-      "/api/v1/auth/login": {
-        "post": {
-          "summary": "User login",
-          "responses": {
-            "200": {
-              "description": "Login successful with tokens"
-            },
-            "401": {
-              "description": "Invalid credentials"
-            },
-            "429": {
-              "description": "Rate limited"
-            }
-          },
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "email",
-                    "password"
-                  ],
-                  "properties": {
-                    "email": {
-                      "type": "string"
-                    },
-                    "mfaCode": {
-                      "type": "string"
-                    },
-                    "password": {
-                      "type": "string"
-                    },
-                    "rememberMe": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/admin/roles": {
+      "/api/v1/notifications": {
         "get": {
-          "summary": "List roles"
+          "summary": "List user notifications"
         },
         "post": {
-          "summary": "Create role"
+          "summary": "Create notification"
         }
       },
-      "/api/v1/auth/logout": {
-        "post": {
-          "summary": "Logout current session",
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
+      "/api/v1/ws/notifications": {
+        "description": "WebSocket endpoint for real-time notifications"
       },
-      "/api/v1/auth/refresh": {
-        "post": {
-          "summary": "Refresh access token",
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "New access token"
-            },
-            "401": {
-              "description": "Invalid refresh token"
-            }
-          }
-        }
-      },
-      "/api/v1/auth/register": {
-        "post": {
-          "summary": "Register new user",
-          "responses": {
-            "201": {
-              "description": "User created successfully"
-            },
-            "400": {
-              "description": "Validation error"
-            },
-            "409": {
-              "description": "Email already exists"
-            }
-          },
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "email",
-                    "password"
-                  ],
-                  "properties": {
-                    "email": {
-                      "type": "string",
-                      "format": "email"
-                    },
-                    "password": {
-                      "type": "string",
-                      "minLength": 8
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/auth/mfa/setup": {
-        "post": {
-          "summary": "Setup MFA with TOTP"
-        }
-      },
-      "/api/v1/users/sessions": {
-        "get": {
-          "summary": "List active sessions"
-        },
-        "delete": {
-          "summary": "Revoke session"
-        }
-      },
-      "/api/v1/auth/password/reset": {
-        "post": {
-          "summary": "Request password reset"
-        }
-      },
-      "/api/v1/auth/oauth/{provider}": {
-        "get": {
-          "summary": "Initiate OAuth flow",
-          "parameters": [
-            {
-              "in": "path",
-              "name": "provider",
-              "schema": {
-                "enum": [
-                  "google",
-                  "github",
-                  "microsoft"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "/api/v1/admin/users/{userId}/roles": {
+      "/api/v1/notifications/read-all": {
         "put": {
-          "summary": "Assign roles to user"
+          "summary": "Mark all as read"
+        }
+      },
+      "/api/v1/notifications/{id}/read": {
+        "put": {
+          "summary": "Mark notification as read"
+        }
+      },
+      "/api/v1/notifications/preferences": {
+        "get": {
+          "summary": "Get preferences"
+        },
+        "put": {
+          "summary": "Update preferences"
+        }
+      },
+      "/api/v1/admin/notifications/broadcast": {
+        "post": {
+          "summary": "Send broadcast notification"
         }
       }
-    },
-    "openapi": "3.0.3"
+    }
   },
   "databaseSchema": {
     "tables": [
       {
-        "name": "users",
+        "name": "notifications",
         "columns": [
-          {
-            "name": "id",
-            "type": "UUID",
-            "primaryKey": true
-          },
-          {
-            "name": "email",
-            "type": "VARCHAR(255)",
-            "unique": true,
-            "notNull": true
-          },
-          {
-            "name": "password_hash",
-            "type": "VARCHAR(255)"
-          },
-          {
-            "name": "email_verified",
-            "type": "BOOLEAN",
-            "default": false
-          },
-          {
-            "name": "mfa_enabled",
-            "type": "BOOLEAN",
-            "default": false
-          },
-          {
-            "name": "mfa_secret",
-            "type": "VARCHAR(255)"
-          },
-          {
-            "name": "failed_login_attempts",
-            "type": "INTEGER",
-            "default": 0
-          },
-          {
-            "name": "locked_until",
-            "type": "TIMESTAMP"
-          },
-          {
-            "name": "created_at",
-            "type": "TIMESTAMP",
-            "default": "NOW()"
-          },
-          {
-            "name": "updated_at",
-            "type": "TIMESTAMP"
-          }
+          "id UUID PK",
+          "user_id UUID FK",
+          "type VARCHAR(50)",
+          "title VARCHAR(255)",
+          "body TEXT",
+          "data JSONB",
+          "read BOOLEAN",
+          "created_at TIMESTAMP"
         ]
       },
       {
-        "name": "password_history",
+        "name": "notification_preferences",
         "columns": [
-          {
-            "name": "id",
-            "type": "UUID",
-            "primaryKey": true
-          },
-          {
-            "name": "user_id",
-            "type": "UUID",
-            "foreignKey": "users.id"
-          },
-          {
-            "name": "password_hash",
-            "type": "VARCHAR(255)"
-          },
-          {
-            "name": "created_at",
-            "type": "TIMESTAMP"
-          }
+          "user_id UUID PK FK",
+          "preferences JSONB",
+          "quiet_hours_start TIME",
+          "quiet_hours_end TIME"
         ]
       },
       {
-        "name": "sessions",
+        "name": "notification_templates",
         "columns": [
-          {
-            "name": "id",
-            "type": "UUID",
-            "primaryKey": true
-          },
-          {
-            "name": "user_id",
-            "type": "UUID",
-            "foreignKey": "users.id"
-          },
-          {
-            "name": "refresh_token_hash",
-            "type": "VARCHAR(255)"
-          },
-          {
-            "name": "device_info",
-            "type": "JSONB"
-          },
-          {
-            "name": "ip_address",
-            "type": "INET"
-          },
-          {
-            "name": "expires_at",
-            "type": "TIMESTAMP"
-          },
-          {
-            "name": "created_at",
-            "type": "TIMESTAMP"
-          }
-        ]
-      },
-      {
-        "name": "roles",
-        "columns": [
-          {
-            "name": "id",
-            "type": "UUID",
-            "primaryKey": true
-          },
-          {
-            "name": "name",
-            "type": "VARCHAR(50)",
-            "unique": true
-          },
-          {
-            "name": "permissions",
-            "type": "JSONB"
-          },
-          {
-            "name": "created_at",
-            "type": "TIMESTAMP"
-          }
-        ]
-      },
-      {
-        "name": "user_roles",
-        "columns": [
-          {
-            "name": "user_id",
-            "type": "UUID",
-            "foreignKey": "users.id"
-          },
-          {
-            "name": "role_id",
-            "type": "UUID",
-            "foreignKey": "roles.id"
-          }
-        ]
-      },
-      {
-        "name": "audit_logs",
-        "columns": [
-          {
-            "name": "id",
-            "type": "UUID",
-            "primaryKey": true
-          },
-          {
-            "name": "user_id",
-            "type": "UUID"
-          },
-          {
-            "name": "action",
-            "type": "VARCHAR(100)"
-          },
-          {
-            "name": "details",
-            "type": "JSONB"
-          },
-          {
-            "name": "ip_address",
-            "type": "INET"
-          },
-          {
-            "name": "user_agent",
-            "type": "TEXT"
-          },
-          {
-            "name": "created_at",
-            "type": "TIMESTAMP"
-          }
+          "id UUID PK",
+          "name VARCHAR(100)",
+          "subject VARCHAR(255)",
+          "html_body TEXT",
+          "text_body TEXT"
         ]
       }
     ]
   },
-  "nonFunctionalRequirements": [
-    "Response time < 200ms for auth endpoints",
-    "Support 10,000 concurrent sessions",
-    "99.9% uptime SLA",
-    "Password hashing with bcrypt cost factor 12",
-    "All data encrypted at rest with AES-256",
-    "TLS 1.3 for all communications"
+  "architectureDecisions": [
+    {
+      "title": "WebSocket for Real-time",
+      "decision": "Use Socket.io for WebSocket connections with Redis adapter for scaling"
+    },
+    {
+      "title": "Email Service",
+      "decision": "Use SendGrid for email delivery with template support"
+    },
+    {
+      "title": "Queue System",
+      "decision": "Use RabbitMQ for notification job processing"
+    }
   ]
 }
